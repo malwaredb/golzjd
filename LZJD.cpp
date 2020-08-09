@@ -5,7 +5,7 @@
 #include <algorithm>  
 #include <mutex>          // std::call_once, std::once_flag
 #include <math.h> // round()
-#include <boost/function_output_iterator.hpp>
+//#include <boost/function_output_iterator.hpp>
 
 
 #include <x86intrin.h>
