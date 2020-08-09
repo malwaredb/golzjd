@@ -5,16 +5,10 @@
 #include <algorithm>  
 #include <mutex>          // std::call_once, std::once_flag
 #include <math.h> // round()
-//#include <boost/function_output_iterator.hpp>
-
-
 #include <x86intrin.h>
 #include <stdint.h>
-
-
 #include "LZJD.h"
 #include "MurmurHash3.h"
-
 using namespace std;
 
 #ifdef __cplusplus
@@ -26,7 +20,6 @@ LZJD::LZJD() {
 
 LZJD::~LZJD() {
 }
-
 
 std::vector<int32_t> getAllHashes(std::vector<char>& bytes)
 {

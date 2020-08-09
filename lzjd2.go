@@ -12,24 +12,24 @@ import (
 
 const digest_size uint64 = 1024
 
-type Int64Array []int64
+type Int32Array []int32
 
-func (f Int64Array) Len() int {
+func (f Int32Array) Len() int {
 	return len(f)
 }
 
-func (f Int64Array) Less(i, j int) bool {
+func (f Int32Array) Less(i, j int) bool {
 	return f[i] < f[j]
 }
 
-func (f Int64Array) Swap(i, j int) {
+func (f Int32Array) Swap(i, j int) {
 	f[i], f[j] = f[j], f[i]
 }
 
-func GetAllHashes(data []byte) []int64 {
-	ints := make([]int64, 0)
+func GetAllHashes(data []byte) []int32 {
+	ints := make([]int32, 0)
 
-	x_set := make(map[int64]bool)
+	x_set := make(map[int32]bool)
 	running_hash := NewMurmurHash3()
 
 	for _, b := range data {
@@ -46,8 +46,8 @@ func GetAllHashes(data []byte) []int64 {
 	return ints
 }
 
-func Digest(k uint64, data []byte) []int64 {
-	ints := Int64Array(GetAllHashes(data))
+func Digest(k uint64, data []byte) []int32 {
+	ints := Int32Array(GetAllHashes(data))
 
 	sort.Sort(ints)
 	if uint64(len(ints)) > k {
@@ -57,7 +57,7 @@ func Digest(k uint64, data []byte) []int64 {
 	return ints
 }
 
-func IntersectVector(left, right []int64) int {
+func IntersectVector(left, right []int32) int {
 	count := 0
 
 	for _, x := range left {
@@ -71,7 +71,7 @@ func IntersectVector(left, right []int64) int {
 	return count
 }
 
-func Similarity (left, right []int64) int {
+func Similarity (left, right []int32) int {
 	same := float64(IntersectVector(left, right))
 	sim := same / ( float64(len(left)) + float64(len(right)) - same)
 	return int(100.0*sim)
@@ -98,20 +98,23 @@ func GetLZJDHashFromBytes(fname string, fcontents []byte) string {
 	return "lzjd:"+fname+":"+base64.StdEncoding.EncodeToString(thebytes)
 }
 
-func LZJDHashToInts(lzjdHash string) []int64 {
+func LZJDHashToInts(lzjdHash string) []int32 {
 	parts := strings.Split(lzjdHash, ":")
 	base64String := parts[len(parts)-1]
-	lzjdBytes, err := base64.StdEncoding.DecodeString(base64String+"==")
+	if !strings.HasSuffix(base64String, "==") {
+		base64String = base64String + "=="
+	}
+	lzjdBytes, err := base64.StdEncoding.DecodeString(base64String)
 	if err != nil {
 		fmt.Printf("String: %s\n", base64String)
 		fmt.Printf("Error converting from base64: %s\n", err)
 		return nil
 	}
-	theInts := make([]int64,0)
+	theInts := make([]int32,0)
 	for offset := 0; offset < len(lzjdBytes); offset += 4 {
 		segmentBytes := []byte{lzjdBytes[offset], lzjdBytes[offset+1], lzjdBytes[offset+2], lzjdBytes[offset+3]}
 		thisInt := binary.LittleEndian.Uint32(segmentBytes)
-		theInts = append(theInts, int64(thisInt))
+		theInts = append(theInts, int32(thisInt))
 	}
 	return theInts
 }
