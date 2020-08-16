@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <string>
 #include <cstring>
-#include <x86intrin.h>
 #include <boost/archive/iterators/base64_from_binary.hpp>
 #include <boost/archive/iterators/binary_from_base64.hpp>
 #include <boost/archive/iterators/transform_width.hpp>
@@ -20,6 +19,8 @@ namespace bi = boost::archive::iterators;
 extern "C" {
 
 const uint64_t digest_size = 1024;
+
+//#define DEBUGHASHES
 
 vector<int32_t> cstring_to_lzjd(char* hash) {
     string line = hash;
@@ -90,7 +91,26 @@ char* createDigest(char* path) {
     vector<char> all_bytes;
     readAllBytes(path, all_bytes);
 
+    #ifdef DEBUGHASHES
+    MurmurHash3 running_hash = MurmurHash3();
+    int8_t some_byte = all_bytes[0];
+    int32_t hash = running_hash.pushByte(some_byte);
+    cout << "C++ MurmurHash3(" << (char)some_byte << ") = " << hash << endl;
+
+    some_byte = all_bytes[1];
+    hash = running_hash.pushByte(some_byte);
+    cout << "C++ MurmurHash3(" << (char)some_byte << ") = " << hash << endl;
+    #endif
+
     vector<int32_t> di = digest(digest_size, all_bytes);
+
+    #ifdef DEBUGHASHES
+    cout << "C++ MurmurHash ints:" << endl;
+    for(unsigned int i = 0; i < di.size(); i++) {
+        cout << di[i] << " ";
+    }
+    cout << endl;
+    #endif
 
     typedef 
         bi::base64_from_binary<    // convert binary values to base64 characters
@@ -124,6 +144,13 @@ char* createDigestFromBuffer(char *buff, int buffLen) {
     }
 
     vector<int32_t> di = digest(digest_size, all_bytes);
+    #ifdef DEBUGHASHES
+    cout << "C++ MurmurHash ints:" << endl;
+    for(unsigned int i = 0; i < di.size(); i++) {
+        cout << di[i] << " ";
+    }
+    cout << endl;
+    #endif
 
     typedef
         bi::base64_from_binary<    // convert binary values to base64 characters

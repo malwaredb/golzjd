@@ -5,7 +5,14 @@
 #include <algorithm>  
 #include <mutex>          // std::call_once, std::once_flag
 #include <math.h> // round()
+
+/*
+#if defined(__x86_64__) || defined(_M_AMD64)
+#define HAVE_INTRINSISCS
 #include <x86intrin.h>
+#endif
+*/
+
 #include <stdint.h>
 #include "LZJD.h"
 #include "MurmurHash3.h"
@@ -64,11 +71,11 @@ std::vector<int32_t> digest(uint64_t k, std::vector<char>& bytes)
     return ints;
 }
 
-
+#ifdef HAVE_INTRINSISCS
 //Faster vecotrized list intersection taken from https://highlyscalable.wordpress.com/2012/06/05/fast-intersection-sorted-lists-sse/ 
 //Need b/c C++ compiler output was over 5x slower than Java at this simple task!
 //Surprisingly, sill more than 2x slower than the Java version! Go JIT go! 
-size_t intersect_vector(int32_t *A, int32_t *B, size_t s_a, size_t s_b) 
+size_t intersect_vector_intrin(int32_t *A, int32_t *B, size_t s_a, size_t s_b)
 {
     size_t count = 0;
     size_t i_a = 0, i_b = 0;
@@ -119,12 +126,32 @@ size_t intersect_vector(int32_t *A, int32_t *B, size_t s_a, size_t s_b)
  
     return count;
 }
+#endif
+
+size_t intersect_vector(const std::vector<int32_t>& x_minset, const std::vector<int32_t>& y_minset) {
+    #ifdef HAVE_INTRINSISCS
+        return intersect_vector_intrin((int32_t*)x_minset.data(), (int32_t*)y_minset.data(), x_minset.size(), y_minset.size());
+    #else
+    vector<int32_t> v3;
+    set_intersection(x_minset.begin(),x_minset.end(),
+                     y_minset.begin(),y_minset.end(),
+                     back_inserter(v3));
+    return v3.size();
+    #endif
+}
 
 int32_t similarity(const std::vector<int32_t>& x_minset, const std::vector<int32_t>& y_minset)
 {
     int32_t same = 0;
+    //int32_t same3 = 0;
     
-    same = intersect_vector((int32_t*)x_minset.data(), (int32_t*)y_minset.data(), x_minset.size(), y_minset.size());
+    same = intersect_vector(x_minset, y_minset);
+    //same3 = intersect_vector_stl(x_minset, y_minset);
+    /*if (same == same3) {
+        cout << "STL intersect worked, found " << same3 << endl;
+    } else {
+        cout << "STL " << same3 << " whereas original intersect found " << same << endl;
+    }*/
     double sim = same / (double) (x_minset.size() + y_minset.size() - same);
     return (int) (round(100*sim));
 }
