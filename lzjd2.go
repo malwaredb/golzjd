@@ -34,7 +34,9 @@ func GetAllHashes(data []byte) []int32 {
 
 	for _, b := range data {
 		hash := running_hash.PushByte(int8(b))
-
+		//if idx < 2 {
+		//	fmt.Printf("Go MurmurHash(%x) == %d\n", int8(b), hash)
+		//}
 		_, okay := x_set[hash]
 		if !okay {
 			x_set[hash] = true
@@ -48,11 +50,13 @@ func GetAllHashes(data []byte) []int32 {
 
 func Digest(k uint64, data []byte) []int32 {
 	ints := Int32Array(GetAllHashes(data))
-
 	sort.Sort(ints)
 	if uint64(len(ints)) > k {
 		ints = ints[:k]
 	}
+	//fmt.Printf(" Go Ints:\n")
+	//fmt.Print(ints)
+	//fmt.Print("\n")
 
 	return ints
 }

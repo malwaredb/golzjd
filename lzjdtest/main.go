@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/malwaredb/golzjd"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"math/rand"
@@ -58,6 +60,34 @@ func CompareRandom(rounds int) {
 	}
 }
 
+func CompareFileIOvsBuffer(theBin string) {
+	fileContents, err := ioutil.ReadFile(theBin)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to read %s: %s.\n", theBin, err)
+		return
+	}
+
+	zakLZJD := golzjd.GetLZJDHashFromBytes(filepath.Base(theBin), fileContents)
+	raffLZJD := golzjd.GenerateHashFromBuffer(fileContents)
+	raff_sim := golzjd.CompareHashes(zakLZJD, raffLZJD)
+	zak_sim := golzjd.CompareHashesPureGo(zakLZJD, raffLZJD)
+	if raff_sim == int32(zak_sim) {
+		fmt.Printf("Similarities agreed.\n")
+	} else {
+		fmt.Printf("Pure Go similarity: %d, C++ similarity: %d.\n", zak_sim, raff_sim)
+	}
+
+	raffLZJDDirectIO := golzjd.GenerateHashFromFile(theBin)
+	raffLZJD = strings.Replace(raffLZJD, "lzjd:buffer:", fmt.Sprintf("lzjd:%s:", filepath.Base(theBin)), 1)
+	if raffLZJD == raffLZJDDirectIO {
+		fmt.Printf("C++ versions agree with respect to buffer vs. reading from disk.\n")
+	} else {
+		fmt.Printf("C++ mis-match for buffer vs. reading from disk.\n")
+		fmt.Printf("Buffer: %s\n", raffLZJD)
+		fmt.Printf("From disk: %s\n", raffLZJDDirectIO)
+	}
+}
+
 func main() {
 	if len(os.Args) == 3 {
 		CompareTwo(os.Args[1], os.Args[2])
@@ -86,4 +116,5 @@ func main() {
 		}
 	}
 	CompareOne(theBin)
+	//CompareFileIOvsBuffer(theBin)
 }

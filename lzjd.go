@@ -1,6 +1,6 @@
 package golzjd
 
-// #cgo CXXFLAGS: -Wall -ggdb -std=c++11 -msse4.2 -I .
+// #cgo CXXFLAGS: -Wall -std=c++11 -I .
 // #cgo LDFLAGS: -lstdc++
 /*
 #include "lzjd_helper.h"

@@ -1,5 +1,7 @@
 package golzjd
 
+import "math/bits"
+
 const c1 int64 = 0xcc9e2d51
 const c2 int64 = 0x1b873593
 const c3 int64 = 0x85ebca6b // fmix
@@ -49,7 +51,7 @@ func (mh* MurmurHash3) PushByte(b int8) int32 {
 	mh.Len++
 
 	var h1_as_if_done int32 = 0
-	if (mh.Len > 0 && mh.Len % 4 == 0) { //we have a valid history of 4 items!
+	if mh.Len > 0 && mh.Len % 4 == 0 { //we have a valid history of 4 items!
 		// little endian load order
 		k1 := mh.Data.I
 		k1 = int32(int64(k1) * c1)
@@ -77,8 +79,12 @@ func (mh* MurmurHash3) PushByte(b int8) int32 {
 	return h1_as_if_done
 }
 
+//func rotl32(x uint32, r int8) uint32 {
+//	return uint32(int32(x << r) | int32(x >> (32 - r)))
+//}
+
 func rotl32(x uint32, r int8) uint32 {
-	return uint32(int32(x << r) | int32(x >> (32 - r)))
+	return bits.RotateLeft32(x, int(r))
 }
 
 func fmix32(h int32) int32 {
