@@ -1,6 +1,6 @@
 # golzjd
 
-This project is a work in progress to convert Edward Raff's original [LZJD](https://github.com/EdwardRaff/LZJD) to Go. To use LZJD with your project, run `go get github.com/rjzak/golzjd`, and import the project into your Go file. For more information about LZJD itself, read the [original paper](https://arxiv.org/abs/1708.03346).
+This project is a work in progress to convert Edward Raff's original [LZJD](https://github.com/EdwardRaff/LZJD) to Go. To use LZJD with your project, run `go get github.com/malwaredb/golzjd`, and import the project into your Go file. For more information about LZJD itself, read the [original paper](https://arxiv.org/abs/1708.03346).
 
 ## Example use
 
